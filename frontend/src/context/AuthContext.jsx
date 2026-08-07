@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import api from '../api/client';
 
 const AuthContext = createContext();
@@ -11,18 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('codeguard_token'));
   const [loading, setLoading] = useState(false);
 
-  const login = async (email, password) => {
-    setLoading(true);
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      const { user, token } = res.data;
-      
-      setUser(user);
-      setToken(token);
-      localStorage.setItem('codeguard_user', JSON.stringify(user));
-      localStorage.setItem('codeguard_token', token);
-
-      return { success: true };
   const formatError = (err, defaultMsg) => {
     const errorData = err.response?.data?.error || err.response?.data?.message || err.message;
     if (typeof errorData === 'string') return errorData;
