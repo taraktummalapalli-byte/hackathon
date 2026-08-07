@@ -23,10 +23,31 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('codeguard_token', token);
 
       return { success: true };
+  const formatError = (err, defaultMsg) => {
+    const errorData = err.response?.data?.error || err.response?.data?.message || err.message;
+    if (typeof errorData === 'string') return errorData;
+    if (errorData && typeof errorData === 'object') {
+      return errorData.message || JSON.stringify(errorData);
+    }
+    return defaultMsg;
+  };
+
+  const login = async (email, password) => {
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      const { user, token } = res.data;
+      
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('codeguard_user', JSON.stringify(user));
+      localStorage.setItem('codeguard_token', token);
+
+      return { success: true };
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.error || 'Login failed. Please check credentials.'
+        error: formatError(err, 'Login failed. Please check credentials.')
       };
     } finally {
       setLoading(false);
@@ -48,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.error || 'Registration failed.'
+        error: formatError(err, 'Registration failed.')
       };
     } finally {
       setLoading(false);
