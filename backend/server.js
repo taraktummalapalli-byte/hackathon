@@ -38,11 +38,13 @@ app.use(errorHandler);
 
 const PORT = env.port || 5000;
 
-app.listen(PORT, () => {
-  console.log(`=================================================`);
-  console.log(`🚀 CodeGuard AI Backend running on port ${PORT}`);
-  console.log(`🔒 Health Check: http://localhost:${PORT}/api/health`);
-  console.log(`=================================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`=================================================`);
+    console.log(`🚀 CodeGuard AI Backend running on port ${PORT}`);
+    console.log(`🔒 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`=================================================`);
+  });
+}
 
 module.exports = app;
