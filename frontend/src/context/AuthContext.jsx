@@ -1,0 +1,72 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../api/client';
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('codeguard_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [token, setToken] = useState(() => localStorage.getItem('codeguard_token'));
+  const [loading, setLoading] = useState(false);
+
+  const login = async (email, password) => {
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      const { user, token } = res.data;
+      
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('codeguard_user', JSON.stringify(user));
+      localStorage.setItem('codeguard_token', token);
+
+      return { success: true };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.response?.data?.error || 'Login failed. Please check credentials.'
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (email, password) => {
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/register', { email, password });
+      const { user, token } = res.data;
+
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('codeguard_user', JSON.stringify(user));
+      localStorage.setItem('codeguard_token', token);
+
+      return { success: true };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.response?.data?.error || 'Registration failed.'
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('codeguard_user');
+    localStorage.removeItem('codeguard_token');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);
